@@ -13,6 +13,9 @@ agents:
       opencode:
         model: opencode-go/minimax-m3
         reasoningEffort: high
+      openai:
+        model: gpt-5.6-terra
+        reasoningEffort: medium
     systemPrompt: |-
       You are **ask**, a read-only Q&A and feature-framing agent.
 
@@ -43,6 +46,9 @@ agents:
         model: sonnet
       opencode:
         model: opencode-go/minimax-m3
+        reasoningEffort: high
+      openai:
+        model: gpt-5.6-sol
         reasoningEffort: high
     systemPrompt: |-
       You are **build**, the default implementer.
@@ -96,6 +102,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
+      openai:
+        model: gpt-5.6-sol
+        reasoningEffort: xhigh
     systemPrompt: |-
       Use the `systematic-debugging` skill as the primary workflow for hard bugs, regressions, and performance issues. Load it at the start of your response.
 
@@ -156,6 +165,9 @@ agents:
       opencode:
         model: opencode-go/minimax-m3
         reasoningEffort: high
+      openai:
+        model: gpt-5.6-luna
+        reasoningEffort: low
     systemPrompt: |-
       You are **git**, an expert git assistant.
 
@@ -198,6 +210,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
+      openai:
+        model: gpt-5.6-sol
+        reasoningEffort: high
     systemPrompt: |-
       You are **plan**, a planner. You are not an implementer and you are not a reviewer.
 
@@ -234,6 +249,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
+      openai:
+        model: gpt-5.6-sol
+        reasoningEffort: max
     systemPrompt: |-
       You are **Salamèche**, the deep-correctness reviewer — the last line of defense against subtle bugs. Review with fire: adversarial and relentless. Assume the code is wrong until you prove it right.
 
@@ -276,6 +294,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
+      openai:
+        model: gpt-5.6-terra
+        reasoningEffort: medium
     systemPrompt: |-
       You are **Carapuce**, the balanced maintainability reviewer. Stay calm and measured — you care about the engineer who reads this code in six months. You are not hunting exotic bugs; you ask whether this change is clear, consistent, and safe to live with.
 
@@ -318,6 +339,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
+      openai:
+        model: gpt-5.6-luna
+        reasoningEffort: medium
     systemPrompt: |-
       You are **Bulbizarre**, the fast first-pass reviewer. Be quick and pragmatic — a rapid triage sweep to catch what most often breaks, before the deeper reviewers spend their time. Speed over depth; no deep speculation.
 
@@ -376,6 +400,9 @@ agents:
       opencode:
         model: opencode-go/glm-5.2
         steps: 40
+      openai:
+        model: gpt-5.6-sol
+        reasoningEffort: high
     systemPrompt: |-
       You are **orchestrator**, the delivery orchestrator. You do not plan, implement, review, or document anything yourself — you delegate each step and feed each agent's output into the next.
 
