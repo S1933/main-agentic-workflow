@@ -402,26 +402,14 @@ commands:
   - id: build
     description: Delegate implementation work to the build agent
     template: |
-      ---
-      description: Delegate implementation work to the build subagent
-      ---
-
       Delegate the following to the `build` subagent via the Agent tool (subagent_type: build): $ARGUMENTS
   - id: debug
     description: Delegate root-cause diagnosis to the debug agent
     template: |
-      ---
-      description: Delegate root-cause diagnosis to the debug subagent
-      ---
-
       Delegate the following to the `debug` subagent via the Agent tool (subagent_type: debug): $ARGUMENTS
   - id: to-prd
     description: Converge the current discussion into a structured PRD
     template: |
-      ---
-      description: Converge the current discussion into a structured PRD via the ask agent
-      ---
-
       Delegate the following to the `ask` subagent via the Agent tool (subagent_type: ask):
 
       Switch to PRD mode. Review the current conversation context and converge into a structured PRD document ready for the `plan` agent. The PRD must include: problem statement, goals, non-goals, functional requirements, constraints, and open questions.
@@ -430,26 +418,14 @@ commands:
   - id: git
     description: Delegate a git workflow operation to the git agent
     template: |
-      ---
-      description: Delegate a git workflow question/operation to the git subagent
-      ---
-
       Delegate the following to the `git` subagent via the Agent tool (subagent_type: git): $ARGUMENTS
   - id: plan
     description: Delegate planning and scoping to the plan agent
     template: |
-      ---
-      description: Delegate planning/scoping work to the plan subagent
-      ---
-
       Delegate the following to the `plan` subagent via the Agent tool (subagent_type: plan): $ARGUMENTS
   - id: review
     description: Parallel multi-reviewer diff review with consensus synthesis
     template: |
-      ---
-      description: Parallel code review — salameche + carapuce + bulbizarre, then consensus
-      ---
-
       Orchestrate a multi-perspective review of the current diff for: $ARGUMENTS
 
       Run this from the main session using the Agent tool. Do NOT review the code yourself — the reviewers do that.
@@ -469,10 +445,6 @@ commands:
   - id: ship
     description: Full delivery chain plan → build → verify → review → git
     template: |
-      ---
-      description: Chaîne complète plan → build → verify → review → git pour livrer une feature
-      ---
-
       Orchestrate the full delivery chain for: $ARGUMENTS
 
       Run each step from the main session via the Agent tool, feeding each agent's output into the next. Do not skip steps. Report a short status line between steps.
@@ -487,11 +459,6 @@ commands:
   - id: sync-skills
     description: Sync skills from ~/.agents/skills into ~/.claude/skills
     template: |
-      ---
-      name: sync-skills
-      description: Sync skills from ~/.agents/skills into ~/.claude/skills by creating symlinks for any not yet linked. Use when new skills are added to .agents and need to be made available to Claude.
-      ---
-
       # Sync skills (.agents → .claude)
 
       Mirror every skill in `~/.agents/skills/` into `~/.claude/skills/` as a symlink, so all of them are available to Claude.
