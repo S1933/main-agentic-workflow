@@ -1,0 +1,26 @@
+schemaVersion: "1"
+name: shenron-config
+version: 0.1.0
+description: Personal Shenron agent team and slash commands.
+skills:
+  required:
+    - brainstorming
+    - codebase-design
+    - decision-mapping
+    - design-an-interface
+    - dispatching-parallel-agents
+    - domain-modeling
+    - finishing-a-development-branch
+    - git-guardrails-claude-code
+    - go-cli-conventions
+    - requesting-code-review
+    - resolving-merge-conflicts
+    - schema-validation
+    - setup-pre-commit
+    - systematic-debugging
+    - test-driven-development
+    - to-issues
+    - ubiquitous-language
+    - using-superpowers
+    - verification-before-completion
+    - writing-plans
