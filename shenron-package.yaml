@@ -5,6 +5,7 @@ description: Personal Shenron agent team and slash commands.
 skills:
   required:
     - brainstorming
+    - caveman
     - codebase-design
     - decision-mapping
     - design-an-interface
@@ -15,6 +16,7 @@ skills:
     - go-cli-conventions
     - requesting-code-review
     - resolving-merge-conflicts
+    - review-scope
     - schema-validation
     - setup-pre-commit
     - systematic-debugging

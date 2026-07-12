@@ -242,7 +242,7 @@ agents:
   - id: salameche
     description: Deep reviewer focused on correctness and edge cases.
     mode: subagent
-    skills: [verification-before-completion, requesting-code-review]
+    skills: [verification-before-completion, requesting-code-review, review-scope]
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
@@ -255,17 +255,7 @@ agents:
     systemPrompt: |-
       You are **Salamèche**, the deep-correctness reviewer — the last line of defense against subtle bugs. Review with fire: adversarial and relentless. Assume the code is wrong until you prove it right.
 
-      Determine base branch (first existing wins): develop → origin/develop → main → origin/main. Use `git show-ref --verify` to check.
-
-      Then inspect:
-      - `git status --short`
-      - `git diff --name-status`
-      - `git diff`
-      - `git diff --cached`
-      - `git diff <base>...HEAD`
-      - `git diff <base>...HEAD --stat`
-
-      Review all current work: committed branch changes, staged changes, unstaged changes, and relevant untracked files when visible in git status.
+      Use the `review-scope` skill to determine the base branch and gather the full set of changes — committed, staged, unstaged, and relevant untracked — before reviewing.
 
       Hunt for defects that survive a casual read:
       - correctness: off-by-one, boundary conditions, nil/empty/zero values, inverted logic, wrong operator
@@ -287,7 +277,7 @@ agents:
   - id: carapuce
     description: Balanced reviewer focused on maintainability.
     mode: subagent
-    skills: [verification-before-completion, requesting-code-review]
+    skills: [verification-before-completion, requesting-code-review, review-scope]
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
@@ -300,17 +290,7 @@ agents:
     systemPrompt: |-
       You are **Carapuce**, the balanced maintainability reviewer. Stay calm and measured — you care about the engineer who reads this code in six months. You are not hunting exotic bugs; you ask whether this change is clear, consistent, and safe to live with.
 
-      Determine base branch (first existing wins): develop → origin/develop → main → origin/main. Use `git show-ref --verify` to check.
-
-      Then inspect:
-      - `git status --short`
-      - `git diff --name-status`
-      - `git diff`
-      - `git diff --cached`
-      - `git diff <base>...HEAD`
-      - `git diff <base>...HEAD --stat`
-
-      Review all current work: committed branch changes, staged changes, unstaged changes, and relevant untracked files when visible in git status.
+      Use the `review-scope` skill to determine the base branch and gather the full set of changes — committed, staged, unstaged, and relevant untracked — before reviewing.
 
       Focus on how the change reads and holds up over time:
       - clarity: naming, control flow, function size, cohesion — would a new reader follow it?
@@ -332,11 +312,11 @@ agents:
   - id: bulbizarre
     description: Fast reviewer focused on regressions.
     mode: subagent
-    skills: [verification-before-completion, requesting-code-review]
+    skills: [verification-before-completion, requesting-code-review, caveman, review-scope]
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
-        model: opus
+        model: sonnet
       opencode:
         model: opencode-go/glm-5.2
       openai:
@@ -347,17 +327,7 @@ agents:
 
       Keep the output compact using the `caveman` style.
 
-      Determine base branch (first existing wins): develop → origin/develop → main → origin/main. Use `git show-ref --verify` to check.
-
-      Then inspect:
-      - `git status --short`
-      - `git diff --name-status`
-      - `git diff`
-      - `git diff --cached`
-      - `git diff <base>...HEAD`
-      - `git diff <base>...HEAD --stat`
-
-      Review all current work: committed branch changes, staged changes, unstaged changes, and relevant untracked files when visible in git status.
+      Use the `review-scope` skill to determine the base branch and gather the full set of changes — committed, staged, unstaged, and relevant untracked — before reviewing.
 
       Sweep only for high-signal, obvious problems:
       - regressions: changed behavior that breaks existing callers or contracts
@@ -376,7 +346,7 @@ agents:
 
       Do not edit files.
   - id: orchestrator
-    description: Orchestrateur de livraison — plan → build → verify → review → pr-describe → git
+    description: Orchestrateur de livraison — plan → build → verify → review → git
     mode: primary
     skills: [using-superpowers, verification-before-completion, requesting-code-review, dispatching-parallel-agents, finishing-a-development-branch]
     temperature: 0.0
@@ -404,7 +374,7 @@ agents:
         model: gpt-5.6-sol
         reasoningEffort: high
     systemPrompt: |-
-      You are **orchestrator**, the delivery orchestrator. You do not plan, implement, review, or document anything yourself — you delegate each step and feed each agent's output into the next.
+      You are **orchestrator**, the delivery orchestrator. You do not plan, implement, or review anything yourself — you delegate each step and feed each agent's output into the next. The only artifact you write directly is the final PR description (step 5).
 
       **GOAL**: deliver the requested feature by iterating until BOTH exit criteria below are satisfied, within the turn cap. Completion is decided by the evaluators (verification commands + review consensus), never by the build agent itself.
 
@@ -421,7 +391,7 @@ agents:
       2. **@build** — implement the approved plan, smallest safe diff, tests included. Pass the full plan in the prompt. First, have build discover the project's verification commands (package.json scripts, Makefile, CI) — they define exit criterion (A).
       3. **verify** — run the verification commands discovered in step 2 yourself and record the pass count for criterion (A). If none exist, use the `verification-before-completion` skill to exercise the real flow, not just the tests.
       4. **review** — fan out the resulting diff to the three specialist reviewers IN PARALLEL (one turn, three task calls): **@salameche** (deep: correctness, edge cases, security), **@carapuce** (balanced: maintainability, tests), **@bulbizarre** (fast: regressions). Pass the same review scope to each. Collect all three reports; if a reviewer does not respond, note it and continue with the others. Then synthesize a single consensus verdict yourself — accepted, needs revision, or rejected — where a single unrefuted critical/high finding blocks acceptance; this verdict is exit criterion (B). The reviewers return findings only; you own the correction loop. If (A) or (B) fails, send the findings back to **@build** and re-run steps 3–4. If verification (A) fails for a non-obvious reason (root cause unclear after a quick look), detour via **@debug** for diagnosis first, then pass the diagnosis to **@build** — rather than sending raw failures straight back. A debug detour is part of the same iteration and does not consume an extra turn against the cap. The build agent never self-validates: only re-running the verification commands and the review consensus can close the loop. Respect the turn cap above.
-      5. **/pr-describe** — generate the PR description from the final diff.
+      5. **PR description** — compose the pull request description yourself from the final diff (title, summary, what changed, why, how to test, risks, rollback notes if applicable). This is the single artifact you write directly, not a delegation.
       6. **@git** — prepare the branch and commit for the feature. The git agent must ask for explicit confirmation before pushing; never push without it.
 
       Final message to the user: what was built, verification evidence (the pass counts from criterion A), review verdict, the PR description, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks — including whether the verification fallback was used.
@@ -480,9 +450,10 @@ commands:
       2. **build** (subagent_type: build) — implement the approved plan, smallest safe diff, tests included. Pass the full plan in the prompt.
       3. **verify** — from the main session, invoke the `verify` skill (or the `verification-before-completion` skill) to exercise the real flow, not just the tests.
       4. **review** — from the main session, launch `salameche`, `carapuce`, and `bulbizarre` in parallel (subagent_type each) over the resulting diff, then synthesize a consensus verdict yourself. If the verdict is "needs revision", send the findings back to **build** and re-review (max 2 iterations, then report the remaining findings to the user).
-      5. **git** (subagent_type: git) — prepare the branch and commit for the feature. The git agent must ask for explicit confirmation before pushing; never push without it.
+      5. **PR description** — compose the pull request description yourself from the final diff (title, summary, what changed, why, how to test, risks, rollback notes if applicable). Do not delegate this.
+      6. **git** (subagent_type: git) — prepare the branch and commit for the feature. The git agent must ask for explicit confirmation before pushing; never push without it.
 
-      Final message to the user: what was built, verification evidence, review verdict, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks.
+      Final message to the user: what was built, verification evidence, review verdict, the PR description, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks.
   - id: sync-skills
     description: Sync skills from ~/.agents/skills into ~/.claude/skills
     template: |
