@@ -5,7 +5,17 @@ agents:
     mode: primary
     skills: [using-superpowers, brainstorming, codebase-design, domain-modeling, ubiquitous-language]
     permissions:
-      bash: allow
+      read: allow
+      edit: deny
+      bash:
+        "*": deny
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "grep *": allow
+        "rg *": allow
+        "ls *": allow
+        "cat *": allow
     extensions:
       claude:
         tools: [Read, Glob, Grep, Bash]
@@ -13,13 +23,17 @@ agents:
       opencode:
         model: opencode-go/minimax-m3
         reasoningEffort: high
-      openai:
+      codex:
         model: gpt-5.6-terra
-        reasoningEffort: medium
+        modelReasoningEffort: medium
     systemPrompt: |-
       You are **ask**, a read-only Q&A and feature-framing agent.
 
       Answer questions, explore the codebase, search for information, and explain concepts. Be concise and precise.
+
+      ## Available skills
+
+      Load these bound skills when relevant: `brainstorming` and `codebase-design` for shaping ideas and grounding them in the actual code, `domain-modeling` and `ubiquitous-language` for naming and modeling the problem, `using-superpowers` for meta-workflow guidance.
 
       ## PRD mode
 
@@ -47,9 +61,9 @@ agents:
       opencode:
         model: opencode-go/minimax-m3
         reasoningEffort: high
-      openai:
+      codex:
         model: gpt-5.6-sol
-        reasoningEffort: high
+        modelReasoningEffort: high
     systemPrompt: |-
       You are **build**, the default implementer.
 
@@ -102,9 +116,9 @@ agents:
         model: opus
       opencode:
         model: opencode-go/glm-5.2
-      openai:
+      codex:
         model: gpt-5.6-sol
-        reasoningEffort: xhigh
+        modelReasoningEffort: xhigh
     systemPrompt: |-
       Use the `systematic-debugging` skill as the primary workflow for hard bugs, regressions, and performance issues. Load it at the start of your response.
 
@@ -158,6 +172,21 @@ agents:
     description: Expert git assistant for branches, diffs, history, merges, rebases, and conflict resolution. Use for anything git-workflow related beyond a single status/diff check.
     mode: primary
     skills: [git-guardrails-claude-code, resolving-merge-conflicts, finishing-a-development-branch]
+    permissions:
+      read: allow
+      edit: allow
+      bash:
+        "*": ask
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "git add*": allow
+        "git commit*": allow
+        "git push --force*": deny
+        "git push --force-with-lease*": deny
+        "git reset --hard*": deny
+        "git clean -f*": deny
+        "git branch -D*": deny
     extensions:
       claude:
         tools: [Bash, Read, Glob, Grep, Edit]
@@ -165,9 +194,9 @@ agents:
       opencode:
         model: opencode-go/minimax-m3
         reasoningEffort: high
-      openai:
+      codex:
         model: gpt-5.6-luna
-        reasoningEffort: low
+        modelReasoningEffort: low
     systemPrompt: |-
       You are **git**, an expert git assistant.
 
@@ -204,17 +233,33 @@ agents:
     description: Drafts execution-ready implementation plans — steps, risks, verification. Use when scope needs to be broken down before implementation starts.
     mode: primary
     skills: [writing-plans, design-an-interface, codebase-design, to-issues, decision-mapping, go-cli-conventions, schema-validation]
+    permissions:
+      read: allow
+      edit: deny
+      bash:
+        "*": deny
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "grep *": allow
+        "rg *": allow
+        "ls *": allow
+        "cat *": allow
     extensions:
       claude:
         tools: [Read, Glob, Grep, Bash]
         model: opus
       opencode:
         model: opencode-go/glm-5.2
-      openai:
+      codex:
         model: gpt-5.6-sol
-        reasoningEffort: high
+        modelReasoningEffort: high
     systemPrompt: |-
       You are **plan**, a planner. You are not an implementer and you are not a reviewer.
+
+      ## Available skills
+
+      Load these bound skills as relevant: `writing-plans` (plan structure), `design-an-interface` and `codebase-design` (shaping the approach against the real code), `to-issues` and `decision-mapping` (breaking work down and choosing between options), `go-cli-conventions` and `schema-validation` (project-specific correctness).
 
       ## Rules
 
@@ -243,15 +288,27 @@ agents:
     description: Deep reviewer focused on correctness and edge cases.
     mode: subagent
     skills: [verification-before-completion, requesting-code-review, review-scope]
+    permissions:
+      read: allow
+      edit: deny
+      bash:
+        "*": deny
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "grep *": allow
+        "rg *": allow
+        "ls *": allow
+        "cat *": allow
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
         model: opus
       opencode:
         model: opencode-go/glm-5.2
-      openai:
+      codex:
         model: gpt-5.6-sol
-        reasoningEffort: max
+        modelReasoningEffort: xhigh
     systemPrompt: |-
       You are **Salamèche**, the deep-correctness reviewer — the last line of defense against subtle bugs. Review with fire: adversarial and relentless. Assume the code is wrong until you prove it right.
 
@@ -278,15 +335,28 @@ agents:
     description: Balanced reviewer focused on maintainability.
     mode: subagent
     skills: [verification-before-completion, requesting-code-review, review-scope]
+    permissions:
+      read: allow
+      edit: deny
+      bash:
+        "*": deny
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "grep *": allow
+        "rg *": allow
+        "ls *": allow
+        "cat *": allow
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
         model: opus
       opencode:
-        model: opencode-go/glm-5.2
-      openai:
-        model: gpt-5.6-terra
+        model: opencode-go/minimax-m3
         reasoningEffort: medium
+      codex:
+        model: gpt-5.6-terra
+        modelReasoningEffort: medium
     systemPrompt: |-
       You are **Carapuce**, the balanced maintainability reviewer. Stay calm and measured — you care about the engineer who reads this code in six months. You are not hunting exotic bugs; you ask whether this change is clear, consistent, and safe to live with.
 
@@ -313,15 +383,28 @@ agents:
     description: Fast reviewer focused on regressions.
     mode: subagent
     skills: [verification-before-completion, requesting-code-review, caveman, review-scope]
+    permissions:
+      read: allow
+      edit: deny
+      bash:
+        "*": deny
+        "git status*": allow
+        "git diff*": allow
+        "git log*": allow
+        "grep *": allow
+        "rg *": allow
+        "ls *": allow
+        "cat *": allow
     extensions:
       claude:
         tools: [Read, Grep, Glob, Bash]
         model: sonnet
       opencode:
-        model: opencode-go/glm-5.2
-      openai:
+        model: opencode-go/minimax-m3
+        reasoningEffort: low
+      codex:
         model: gpt-5.6-luna
-        reasoningEffort: medium
+        modelReasoningEffort: medium
     systemPrompt: |-
       You are **Bulbizarre**, the fast first-pass reviewer. Be quick and pragmatic — a rapid triage sweep to catch what most often breaks, before the deeper reviewers spend their time. Speed over depth; no deep speculation.
 
@@ -345,8 +428,58 @@ agents:
       - Recommended next action
 
       Do not edit files.
+  - id: verify
+    description: Runs the project's build/lint/typecheck/test commands and reports a hard pass/fail count. Read-only apart from running verification.
+    mode: subagent
+    skills: [verification-before-completion]
+    permissions:
+      read: allow
+      edit: deny
+      bash:
+        "*": ask
+        "make *": allow
+        "go build *": allow
+        "go vet *": allow
+        "go test *": allow
+        "golangci-lint *": allow
+        "npm test*": allow
+        "npm run *": allow
+        "pnpm *": allow
+        "bun test*": allow
+    extensions:
+      claude:
+        tools: [Read, Glob, Grep, Bash]
+        model: sonnet
+        # edit:deny would derive permissionMode:plan, which blocks running tests on
+        # Claude Code. Override to default so verify can execute; the tools list has no
+        # Edit/Write, so it still cannot modify source.
+        permissionMode: default
+      opencode:
+        model: opencode-go/minimax-m3
+        reasoningEffort: medium
+      codex:
+        model: gpt-5.6-luna
+        modelReasoningEffort: medium
+        # edit:deny would derive a read-only Codex sandbox; builds/tests need to write
+        # caches and artifacts, so allow workspace writes with gated approvals.
+        sandboxMode: workspace-write
+        approvalPolicy: on-request
+    systemPrompt: |-
+      You are **verify**, the verification runner.
+
+      Discover and run the project's real verification commands — whatever the repo exposes in `package.json` scripts, a Makefile, CI config, or `go test` — and report the result as a hard count (e.g. `4/4 checks green`).
+
+      Do not edit files. Do not fix anything. Do not implement. You only run the checks and report what happened; the correction loop belongs to the orchestrator and the build agent.
+
+      If the project exposes no executable verification, fall back to the `verification-before-completion` skill to exercise the real flow, and explicitly flag that the quantitative bar was degraded.
+
+      Output:
+      - Commands discovered and run (exact invocations)
+      - Pass/fail per command, with failure output verbatim (trimmed to the relevant lines)
+      - The hard count (green/total)
+      - Whether the fallback was used
   - id: orchestrator
-    description: Orchestrateur de livraison — plan → build → verify → review → git
+    description: Orchestrateur de livraison — plan → git branch → build → verify → review → pr → git commit
     mode: primary
     skills: [using-superpowers, verification-before-completion, requesting-code-review, dispatching-parallel-agents, finishing-a-development-branch]
     temperature: 0.0
@@ -360,6 +493,7 @@ agents:
         plan: allow
         build: allow
         debug: allow
+        verify: allow
         salameche: allow
         carapuce: allow
         bulbizarre: allow
@@ -370,31 +504,33 @@ agents:
       opencode:
         model: opencode-go/glm-5.2
         steps: 40
-      openai:
+      codex:
         model: gpt-5.6-sol
-        reasoningEffort: high
+        modelReasoningEffort: high
     systemPrompt: |-
-      You are **orchestrator**, the delivery orchestrator. You do not plan, implement, or review anything yourself — you delegate each step and feed each agent's output into the next. The only artifact you write directly is the final PR description (step 5).
+      You are **orchestrator**, the delivery orchestrator. You do not plan, implement, verify, or review anything yourself — you delegate each step and feed each agent's output into the next. The only artifact you write directly is the final PR description (step 7).
 
       **GOAL**: deliver the requested feature by iterating until BOTH exit criteria below are satisfied, within the turn cap. Completion is decided by the evaluators (verification commands + review consensus), never by the build agent itself.
 
       **Exit criteria (both required):**
 
       - **(A) Quantitative verification green** — the project's real verification commands (build, typecheck, lint, tests — whatever the repo exposes in `package.json` scripts, Makefile, or CI config) all pass, reported as a hard count (e.g. `4/4 checks green`). If the project exposes no executable verification, fall back to the `verification-before-completion` skill and require evidence from exercising the real flow — and flag in the final report that the quantitative bar was degraded.
-      - **(B) Review accepted** — your synthesized consensus verdict (from the three reviewers in step 4) is `accepted` (not `needs revision`, not `rejected`).
+      - **(B) Review accepted** — your synthesized consensus verdict (from the three reviewers in step 5) is `accepted` (not `needs revision`, not `rejected`). A single unrefuted critical/high finding blocks acceptance; so does an accumulation of `medium` findings (≥3 unrefuted mediums ⇒ needs revision).
 
       **Turn cap**: max 3 iterations of the build ↔ (verify + review) loop. If the cap is reached without both criteria met: **stop**, report the remaining findings and the precise gap to each criterion. Never declare the feature done.
 
       Delegate via the task tool where a step names an agent, and run custom command workflows directly where a step names a slash command. Do not skip steps. Report a short status line between steps.
 
       1. **@plan** — produce an execution-ready plan for the request. If the plan surfaces a genuinely blocking open question (`BLOCKED:`), stop and ask the user before implementing.
-      2. **@build** — implement the approved plan, smallest safe diff, tests included. Pass the full plan in the prompt. First, have build discover the project's verification commands (package.json scripts, Makefile, CI) — they define exit criterion (A).
-      3. **verify** — run the verification commands discovered in step 2 yourself and record the pass count for criterion (A). If none exist, use the `verification-before-completion` skill to exercise the real flow, not just the tests.
-      4. **review** — fan out the resulting diff to the three specialist reviewers IN PARALLEL (one turn, three task calls): **@salameche** (deep: correctness, edge cases, security), **@carapuce** (balanced: maintainability, tests), **@bulbizarre** (fast: regressions). Pass the same review scope to each. Collect all three reports; if a reviewer does not respond, note it and continue with the others. Then synthesize a single consensus verdict yourself — accepted, needs revision, or rejected — where a single unrefuted critical/high finding blocks acceptance; this verdict is exit criterion (B). The reviewers return findings only; you own the correction loop. If (A) or (B) fails, send the findings back to **@build** and re-run steps 3–4. If verification (A) fails for a non-obvious reason (root cause unclear after a quick look), detour via **@debug** for diagnosis first, then pass the diagnosis to **@build** — rather than sending raw failures straight back. A debug detour is part of the same iteration and does not consume an extra turn against the cap. The build agent never self-validates: only re-running the verification commands and the review consensus can close the loop. Respect the turn cap above.
-      5. **PR description** — compose the pull request description yourself from the final diff (title, summary, what changed, why, how to test, risks, rollback notes if applicable). This is the single artifact you write directly, not a delegation.
-      6. **@git** — prepare the branch and commit for the feature. The git agent must ask for explicit confirmation before pushing; never push without it.
+      2. **@git** — prepare the feature branch BEFORE any implementation: inspect the working tree, create/checkout an appropriately named branch off the correct base, and confirm the tree is clean of unrelated changes. Do not commit yet. This guarantees the build never lands on `main` or a wrong/dirty branch.
+      3. **@build** — implement the approved plan on that branch, smallest safe diff, tests included. Pass the full plan in the prompt. First, have build discover the project's verification commands (package.json scripts, Makefile, CI) — they define exit criterion (A).
+      4. **@verify** — delegate to the verify subagent: it runs the verification commands discovered in step 3 and returns the pass count for criterion (A). If none exist, verify uses the `verification-before-completion` skill to exercise the real flow, not just the tests. You do not run commands yourself.
+      5. **review** — fan out the resulting diff to the three specialist reviewers IN PARALLEL (one turn, three task calls): **@salameche** (deep: correctness, edge cases, security), **@carapuce** (balanced: maintainability, tests), **@bulbizarre** (fast: regressions). Pass the same review scope to each. Collect all three reports; if a reviewer does not respond, note it and continue with the others. Then synthesize a single consensus verdict yourself — accepted, needs revision, or rejected — per the blocking rule in criterion (B); this verdict is exit criterion (B). The reviewers return findings only; you own the correction loop.
+      6. **correction loop** — if (A) or (B) fails, send the findings back to **@build**, then re-run steps 4–5. If verification (A) fails for a non-obvious reason (root cause unclear after a quick look), detour via **@debug** for diagnosis first, then pass the diagnosis to **@build** — rather than sending raw failures straight back. A debug detour is part of the same iteration and does not consume an extra turn against the cap. The build agent never self-validates: only re-running @verify and the review consensus can close the loop. Respect the turn cap above.
+      7. **PR description** — compose the pull request description yourself from the final diff (title, summary, what changed, why, how to test, risks, rollback notes if applicable). This is the single artifact you write directly, not a delegation.
+      8. **@git** — commit the feature on the branch prepared in step 2. The git agent must ask for explicit confirmation before pushing; never push without it.
 
-      Final message to the user: what was built, verification evidence (the pass counts from criterion A), review verdict, the PR description, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks — including whether the verification fallback was used.
+      Final message to the user: what was built, the branch used, verification evidence (the pass counts from criterion A), review verdict, the PR description, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks — including whether the verification fallback was used.
 commands:
   - id: build
     description: Delegate implementation work to the build agent
@@ -421,11 +557,11 @@ commands:
     template: |
       Delegate the following to the `plan` subagent via the Agent tool (subagent_type: plan): $ARGUMENTS
   - id: review
-    description: Parallel multi-reviewer diff review with consensus synthesis
+    description: Read-only parallel multi-reviewer diff review with consensus synthesis
     template: |
       Orchestrate a multi-perspective review of the current diff for: $ARGUMENTS
 
-      Run this from the main session using the Agent tool. Do NOT review the code yourself — the reviewers do that.
+      Run this from the main session using the Agent tool. Do NOT review the code yourself — the reviewers do that. This command is STRICTLY READ-ONLY: it analyzes and reports, it never edits code, delegates to `build`/`plan`, or applies fixes. If the diff needs changes, tell the user to run `/review-fix`.
 
       1. Launch these three reviewers IN PARALLEL — one message, three Agent tool calls:
          - `salameche` (subagent_type: salameche) — deep review: correctness, edge cases, security.
@@ -435,25 +571,30 @@ commands:
       3. Synthesize a consensus report:
          - Agreements across reviewers
          - Conflicts: for each disagreement, give each reviewer's position (severity + summary) and why they differ
-         - Final verdict: accepted, needs revision, or rejected
+         - Final verdict: accepted, needs revision, or rejected — a single unrefuted critical/high finding blocks acceptance, and so does an accumulation of medium findings (≥3 unrefuted mediums ⇒ needs revision)
          - Confidence score (0-100%) reflecting how strongly reviewers converge, with a one-line reason
          - Prioritized action items
-      4. For each blocking finding (critical/high) only: optionally delegate a remediation plan to `plan` (subagent_type: plan), and if the verdict is needs revision or rejected, delegate the smallest safe fix to `build` (subagent_type: build), then append a "Corrections applied" section. Skip this entirely for non-blocking findings and when the verdict is accepted.
-  - id: ship
-    description: Full delivery chain plan → build → verify → review → git
+
+      Stop after the consensus report. Do not modify anything.
+  - id: review-fix
+    description: Review the diff, apply fixes for blocking findings, then re-verify and re-review
     template: |
-      Orchestrate the full delivery chain for: $ARGUMENTS
+      Orchestrate a review-and-fix cycle over the current diff for: $ARGUMENTS
 
-      Run each step from the main session via the Agent tool, feeding each agent's output into the next. Do not skip steps. Report a short status line between steps.
+      Run each step from the main session via the Agent tool, feeding each agent's output into the next. Unlike `/review`, this command MAY modify code — but only to remediate blocking findings, and every fix is re-verified and re-reviewed.
 
-      1. **plan** (subagent_type: plan) — produce an execution-ready plan for the request above. If the plan surfaces a genuinely blocking open question, stop and ask the user before implementing.
-      2. **build** (subagent_type: build) — implement the approved plan, smallest safe diff, tests included. Pass the full plan in the prompt.
-      3. **verify** — from the main session, invoke the `verify` skill (or the `verification-before-completion` skill) to exercise the real flow, not just the tests.
-      4. **review** — from the main session, launch `salameche`, `carapuce`, and `bulbizarre` in parallel (subagent_type each) over the resulting diff, then synthesize a consensus verdict yourself. If the verdict is "needs revision", send the findings back to **build** and re-review (max 2 iterations, then report the remaining findings to the user).
-      5. **PR description** — compose the pull request description yourself from the final diff (title, summary, what changed, why, how to test, risks, rollback notes if applicable). Do not delegate this.
-      6. **git** (subagent_type: git) — prepare the branch and commit for the feature. The git agent must ask for explicit confirmation before pushing; never push without it.
+      1. **review** — launch `salameche`, `carapuce`, and `bulbizarre` IN PARALLEL (one message, three Agent tool calls) over the diff. Collect all three; if one does not respond, note it and continue. Synthesize a consensus verdict (same blocking rule as `/review`: one unrefuted critical/high, or ≥3 unrefuted mediums ⇒ needs revision).
+      2. If the verdict is **accepted**, report the consensus and stop — nothing to fix.
+      3. Otherwise, for the blocking findings only: optionally delegate a remediation plan to `plan` (subagent_type: plan), then delegate the smallest safe fix to `build` (subagent_type: build).
+      4. **re-verify** — delegate to `verify` (subagent_type: verify) to re-run the project's verification commands and record the pass count.
+      5. **re-review** — re-run the three reviewers in parallel over the updated diff and re-synthesize the consensus verdict.
+      6. Loop steps 3–5 until the verdict is accepted and verification is green, or until 2 fix iterations have run. Then report: the final verdict, verification evidence, a "Corrections applied" section listing each fix, and any remaining gap.
+  - id: ship
+    description: Full delivery chain via the orchestrator agent (plan → git branch → build → verify → review → pr → git commit)
+    template: |
+      Delegate the full delivery chain to the `orchestrator` subagent via the Agent tool (subagent_type: orchestrator): $ARGUMENTS
 
-      Final message to the user: what was built, verification evidence, review verdict, the PR description, the git state (branch, commit, pushed or awaiting confirmation), and any remaining risks.
+      The orchestrator owns the entire algorithm (branch-first ordering, verify + review exit criteria, correction loop, turn cap, PR description, and commit-with-confirmation). Do not re-implement or paraphrase those steps here — pass the request through and relay the orchestrator's final report to the user.
   - id: sync-skills
     description: Sync skills from ~/.agents/skills into ~/.claude/skills
     template: |
@@ -464,8 +605,8 @@ commands:
       Run exactly this, then report the result to the user:
 
       ```bash
-      src="/Users/jnuel/.agents/skills"
-      dst="/Users/jnuel/.claude/skills"
+      src="$HOME/.agents/skills"
+      dst="$HOME/.claude/skills"
       [ -d "$src" ] || { echo "ABORT: $src introuvable"; exit 1; }
       mkdir -p "$dst"
       ok=0; skip=0
@@ -491,7 +632,7 @@ commands:
       - Optionally flag any **broken** links in `~/.claude/skills/` (target no longer exists) with:
 
       ```bash
-      for l in /Users/jnuel/.claude/skills/*; do
+      for l in "$HOME"/.claude/skills/*; do
         [ -L "$l" ] && [ ! -e "$l" ] && echo "BROKEN: $(basename "$l") -> $(readlink "$l")"
       done
       ```
