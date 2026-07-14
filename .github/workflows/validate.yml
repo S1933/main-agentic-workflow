@@ -1,0 +1,58 @@
+name: validate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout config package
+        uses: actions/checkout@v4
+        with:
+          path: config
+
+      # The Shenron CLI lives in a separate (private) repo. CI needs read access
+      # to build it — supply a PAT with repo scope as the SHENRON_REPO_TOKEN secret.
+      # If that secret is absent, the build step is skipped and only the YAML lint runs.
+      - name: Checkout Shenron tool
+        id: checkout-tool
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: S1933/Shenron
+          path: shenron
+          token: ${{ secrets.SHENRON_REPO_TOKEN }}
+
+      - name: Set up Go
+        if: steps.checkout-tool.outcome == 'success'
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Build Shenron CLI
+        if: steps.checkout-tool.outcome == 'success'
+        working-directory: shenron
+        run: go build -o "$RUNNER_TEMP/shenron" ./cmd/shenron
+
+      - name: Validate package and inspect generated output
+        if: steps.checkout-tool.outcome == 'success'
+        working-directory: config
+        run: |
+          SHENRON="$RUNNER_TEMP/shenron"
+          "$SHENRON" package install .
+          "$SHENRON" doctor
+          # P0-1 regression guard: Codex output must carry model_reasoning_effort.
+          "$SHENRON" explain shenron-config --target codex | tee codex.out
+          grep -q "model_reasoning_effort" codex.out
+          "$SHENRON" explain shenron-config --target claude-code
+          "$SHENRON" explain shenron-config --target opencode
+
+      # Fallback coverage when the tool isn't buildable in CI: at least confirm the
+      # pivot files are well-formed YAML so obvious breakage is caught.
+      - name: YAML lint (fallback)
+        if: steps.checkout-tool.outcome != 'success'
+        run: |
+          python3 -c "import sys, yaml; [yaml.safe_load(open(f)) for f in ['config/shenron.yaml', 'config/shenron-package.yaml']]; print('YAML OK')"
