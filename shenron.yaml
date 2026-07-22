@@ -62,7 +62,7 @@ agents:
         model: opencode-go/minimax-m3
         reasoningEffort: high
       codex:
-        model: gpt-5.6-sol
+        model: gpt-5.6-terra
         modelReasoningEffort: high
     systemPrompt: |-
       You are **build**, the default implementer.
@@ -355,7 +355,7 @@ agents:
         model: opencode-go/minimax-m3
         reasoningEffort: medium
       codex:
-        model: gpt-5.6-terra
+        model: gpt-5.6-sol
         modelReasoningEffort: medium
     systemPrompt: |-
       You are **Carapuce**, the balanced maintainability reviewer. Stay calm and measured — you care about the engineer who reads this code in six months. You are not hunting exotic bugs; you ask whether this change is clear, consistent, and safe to live with.
@@ -403,7 +403,7 @@ agents:
         model: opencode-go/minimax-m3
         reasoningEffort: low
       codex:
-        model: gpt-5.6-luna
+        model: gpt-5.6-sol
         modelReasoningEffort: medium
     systemPrompt: |-
       You are **Bulbizarre**, the fast first-pass reviewer. Be quick and pragmatic — a rapid triage sweep to catch what most often breaks, before the deeper reviewers spend their time. Speed over depth; no deep speculation.
