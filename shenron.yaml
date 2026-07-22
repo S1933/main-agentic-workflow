@@ -53,7 +53,7 @@ agents:
   - id: build
     description: Implements approved plans and requested code changes with the smallest safe diff. Use for writing code, fixing bugs, and adding features once scope is clear.
     mode: primary
-    skills: [test-driven-development, verification-before-completion, dispatching-parallel-agents, setup-pre-commit, go-cli-conventions, schema-validation]
+    skills: [test-driven-development, verification-before-completion, dispatching-parallel-agents, setup-pre-commit]
     extensions:
       claude:
         tools: [Read, Edit, Write, Bash, Glob, Grep, Skill]
@@ -232,7 +232,7 @@ agents:
   - id: plan
     description: Drafts execution-ready implementation plans — steps, risks, verification. Use when scope needs to be broken down before implementation starts.
     mode: primary
-    skills: [writing-plans, design-an-interface, codebase-design, to-issues, decision-mapping, go-cli-conventions, schema-validation]
+    skills: [writing-plans, design-an-interface, codebase-design, to-issues, decision-mapping]
     permissions:
       read: allow
       edit: deny
@@ -259,7 +259,7 @@ agents:
 
       ## Available skills
 
-      Load these bound skills as relevant: `writing-plans` (plan structure), `design-an-interface` and `codebase-design` (shaping the approach against the real code), `to-issues` and `decision-mapping` (breaking work down and choosing between options), `go-cli-conventions` and `schema-validation` (project-specific correctness).
+      Load these bound skills as relevant: `writing-plans` (plan structure), `design-an-interface` and `codebase-design` (shaping the approach against the real code), `to-issues` and `decision-mapping` (breaking work down and choosing between options).
 
       ## Rules
 
